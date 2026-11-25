@@ -1,0 +1,584 @@
+<title>¿A quién consulto?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: app de una columna con 3 vistas (Consultas / Procesos / Equipo).
+   Identidad Estilo Oficina: grafito cálido + acento ámbar madera (mobiliario). */
+:root{
+  --bg:#f3f0ec; --surface:#ffffff; --surface-2:#ede7df; --header-bg:#ffffff;
+  --fg:#1c1915; --muted:#6f685e; --border:#e4ddd3;
+  --accent:#bf6a1f; --accent-ink:#ffffff; --accent-soft:#f6e6d4;
+  --pending:#9a6a16; --pending-soft:#f7ecd6;
+  --ok:#3f7d52; --ok-soft:#e4efe4;
+  --c-planta:#c2703a; --c-almacen:#5f88a0; --c-diseno:#8a7aa8;
+  --c-rrhh:#5b9279; --c-conta:#b08a3e; --c-comercial:#b5564e; --c-gerencia:#54504a;
+  --radius:14px; --shadow:0 1px 2px rgba(28,25,21,.06),0 6px 20px rgba(28,25,21,.05);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#17140f; --surface:#221e18; --surface-2:#2b261d; --header-bg:#1b1812;
+  --fg:#efe8dd; --muted:#a79d8d; --border:#332d24;
+  --accent:#e0914a; --accent-ink:#17140f; --accent-soft:#3a2c19;
+  --pending:#e0a94a; --pending-soft:#352b17;
+  --ok:#73ab85; --ok-soft:#24301f;
+  --c-planta:#d4824b; --c-almacen:#78a0b8; --c-diseno:#a292c0;
+  --c-rrhh:#73ab90; --c-conta:#c7a455; --c-comercial:#cf6d64; --c-gerencia:#9a948b;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#17140f; --surface:#221e18; --surface-2:#2b261d; --header-bg:#1b1812;
+  --fg:#efe8dd; --muted:#a79d8d; --border:#332d24;
+  --accent:#e0914a; --accent-ink:#17140f; --accent-soft:#3a2c19;
+  --pending:#e0a94a; --pending-soft:#352b17;
+  --ok:#73ab85; --ok-soft:#24301f;
+  --c-planta:#d4824b; --c-almacen:#78a0b8; --c-diseno:#a292c0;
+  --c-rrhh:#73ab90; --c-conta:#c7a455; --c-comercial:#cf6d64; --c-gerencia:#9a948b;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);
+  font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  line-height:1.5;-webkit-font-smoothing:antialiased;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);
+  background:var(--header-bg);z-index:20}
+h1,h2,h3{font-family:"Space Grotesk","Inter",system-ui,sans-serif;margin:0;text-wrap:balance}
+
+/* Header */
+.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:15;background:var(--header-bg);
+  border-bottom:1px solid var(--border)}
+.site__in{max-width:960px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:12px;display:flex;flex-direction:column;gap:11px}
+.brand{display:flex;align-items:center;gap:11px}
+.logo{flex:none;width:40px;height:40px;border-radius:10px;background:var(--fg);color:var(--bg);
+  display:grid;place-items:center;font-family:"Space Grotesk",sans-serif;font-weight:700;
+  font-size:17px;letter-spacing:.5px}
+.brand__txt{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.brand__name{font-weight:700;font-size:15px;letter-spacing:.2px}
+.brand__sub{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.3px}
+.brand__spacer{flex:1}
+.iconbtn{flex:none;border:1px solid var(--border);background:var(--surface);color:var(--muted);
+  border-radius:9px;height:36px;padding:0 11px;font:inherit;font-size:12.5px;font-weight:600;
+  cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.iconbtn:active{transform:translateY(1px)}
+.tabs{display:flex;gap:4px;background:var(--surface-2);border-radius:11px;padding:4px}
+.tab{flex:1;border:0;background:transparent;color:var(--muted);font:inherit;font-size:13.5px;
+  font-weight:600;padding:8px 6px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--surface);color:var(--fg);box-shadow:var(--shadow)}
+
+/* Shared wrap */
+.wrap{max-width:960px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:16px 40px}
+
+/* Search + chips (Consultas) */
+.search{position:relative;display:flex;align-items:center;margin-bottom:10px}
+.search svg{position:absolute;left:12px;width:18px;height:18px;color:var(--muted);pointer-events:none}
+.search input{width:100%;font:inherit;font-size:16px;color:var(--fg);
+  background:var(--surface);border:1px solid var(--border);border-radius:11px;
+  padding:12px 40px 12px 38px;outline:none}
+.search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.search__clear{position:absolute;right:7px;border:0;background:var(--surface-2);color:var(--muted);
+  width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1;display:none}
+.search__clear.on{display:grid;place-items:center}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  margin-bottom:16px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--border);background:var(--surface);color:var(--fg);
+  border-radius:999px;padding:7px 13px;font:inherit;font-size:13px;font-weight:500;cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.chip .dot{width:8px;height:8px;border-radius:50%}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+
+/* Callout */
+.callout{display:flex;gap:11px;background:var(--surface);border:1px solid var(--border);
+  border-left:3px solid var(--accent);border-radius:12px;padding:12px 14px;margin-bottom:16px}
+.callout p{margin:0;font-size:13px;color:var(--muted)}
+.callout b{color:var(--fg)}
+.callout .mk{flex:none;font-size:17px;line-height:1.3}
+
+.count{font-size:12.5px;color:var(--muted);margin:0 2px 12px;letter-spacing:.2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+
+/* Cards (Consultas) */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:15px 15px 14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:9px}
+.card__top{display:flex;align-items:center;gap:7px}
+.card__top .dot{width:9px;height:9px;border-radius:50%;flex:none}
+.cat{font-size:10.5px;font-weight:600;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted)}
+.need{font-size:15.5px;font-weight:600;line-height:1.3}
+.who{display:flex;flex-direction:column;gap:1px;padding:9px 11px;background:var(--surface-2);border-radius:10px}
+.who__to{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
+.who__name{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:16px;color:var(--accent)}
+.who__role{font-size:12.5px;color:var(--muted)}
+.note{margin:0;font-size:12.5px;color:var(--muted)}
+.dot--planta{background:var(--c-planta)}.dot--almacen{background:var(--c-almacen)}
+.dot--diseno{background:var(--c-diseno)}.dot--rrhh{background:var(--c-rrhh)}
+.dot--conta{background:var(--c-conta)}.dot--comercial{background:var(--c-comercial)}
+.dot--gerencia{background:var(--c-gerencia)}
+.empty{display:none;text-align:center;color:var(--muted);padding:48px 16px;font-size:14px}
+.empty.on{display:block}
+
+/* Procesos */
+.lead{font-size:13.5px;color:var(--muted);margin:0 2px 16px}
+.doc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:15px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+.doc__top{display:flex;align-items:center;gap:10px}
+.doc__ic{flex:none;width:38px;height:38px;border-radius:10px;background:var(--surface-2);
+  display:grid;place-items:center;color:var(--accent)}
+.doc__h{font-size:15px;font-weight:600;line-height:1.25}
+.doc__meta{font-size:12px;color:var(--muted);margin-top:1px}
+.badge{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+  border-radius:999px;padding:3px 9px;align-self:flex-start}
+.badge--ok{color:var(--ok);background:var(--ok-soft);border:1px solid var(--ok)}
+.badge--draft{color:var(--pending);background:var(--pending-soft);border:1px solid var(--pending)}
+.badge--soon{color:var(--muted);background:var(--surface-2);border:1px solid var(--border)}
+.doc__link{font-size:12.5px;color:var(--muted);border-top:1px dashed var(--border);padding-top:9px}
+.doc a.open{color:var(--accent);font-weight:600;text-decoration:none}
+
+/* Equipo */
+.note-strip{display:flex;gap:11px;background:var(--pending-soft);border:1px solid var(--border);
+  border-left:3px solid var(--pending);border-radius:12px;padding:12px 14px;margin-bottom:18px}
+.note-strip p{margin:0;font-size:13px;color:var(--muted)}
+.note-strip b{color:var(--fg)}
+.grp{font-family:"Space Grotesk",sans-serif;font-size:12px;font-weight:600;letter-spacing:1.1px;
+  text-transform:uppercase;color:var(--muted);margin:4px 2px 10px}
+.people{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-bottom:22px}
+.person{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 13px;
+  box-shadow:var(--shadow);display:flex;gap:11px;align-items:flex-start}
+.ava{flex:none;width:34px;height:34px;border-radius:50%;background:var(--surface-2);
+  display:grid;place-items:center;font-family:"Space Grotesk",sans-serif;font-weight:600;
+  font-size:13px;color:var(--fg)}
+.person__b{min-width:0;display:flex;flex-direction:column;gap:1px}
+.person__n{font-weight:600;font-size:14px;line-height:1.25}
+.person__r{font-size:12px;color:var(--accent);font-weight:500}
+.person__c{font-size:11.5px;color:var(--muted)}
+.roster{columns:2;column-gap:18px}
+@media (max-width:520px){.roster{columns:1}}
+.roster li{break-inside:avoid;font-size:13.5px;padding:5px 0;border-bottom:1px solid var(--border);
+  list-style:none}
+.roster{padding:0;margin:0}
+.roster li span{color:var(--muted);font-size:11.5px}
+
+.foot{max-width:960px;margin:8px auto 0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:18px 8px;border-top:1px solid var(--border);color:var(--muted);font-size:12px}
+.foot b{color:var(--fg)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%) translateY(10px);background:var(--fg);color:var(--bg);
+  padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;
+  transition:opacity .2s,transform .2s;pointer-events:none;z-index:30}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="site">
+  <div class="site__in">
+    <div class="brand">
+      <div class="logo">EO</div>
+      <div class="brand__txt">
+        <span class="brand__name">Estilo Oficina</span>
+        <span class="brand__sub">¿A quién consulto?</span>
+      </div>
+      <span class="brand__spacer"></span>
+      <button class="iconbtn" id="copy" type="button">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        Enlace
+      </button>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-view="consultas" aria-selected="true">Consultas</button>
+      <button class="tab" role="tab" data-view="procesos" aria-selected="false">Procesos</button>
+      <button class="tab" role="tab" data-view="equipo" aria-selected="false">Equipo</button>
+      <button class="tab" role="tab" data-view="glosario" aria-selected="false">Glosario</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ CONSULTAS ============ -->
+<main class="wrap view" id="view-consultas">
+  <div class="callout">
+    <span class="mk">👋</span>
+    <p><b>Encuentra al toque a quién consultar.</b> Escribe lo que necesitas o filtra por área; cada tema tiene un responsable. Así resolvemos más rápido y cada área apoya mejor.</p>
+  </div>
+
+  <div class="search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input id="q" type="search" inputmode="search" autocomplete="off" placeholder="Busca: vacaciones, stock, entrega, descuento…" aria-label="Buscar una consulta">
+    <button class="search__clear" id="clear" type="button" aria-label="Limpiar">✕</button>
+  </div>
+  <div class="chips" id="chips">
+    <button class="chip" data-cat="all" aria-pressed="true">Todas</button>
+    <button class="chip" data-cat="planta" aria-pressed="false"><span class="dot dot--planta"></span>Planta</button>
+    <button class="chip" data-cat="almacen" aria-pressed="false"><span class="dot dot--almacen"></span>Almacén</button>
+    <button class="chip" data-cat="diseno" aria-pressed="false"><span class="dot dot--diseno"></span>Diseño</button>
+    <button class="chip" data-cat="rrhh" aria-pressed="false"><span class="dot dot--rrhh"></span>RR.HH.</button>
+    <button class="chip" data-cat="conta" aria-pressed="false"><span class="dot dot--conta"></span>Contabilidad</button>
+    <button class="chip" data-cat="comercial" aria-pressed="false"><span class="dot dot--comercial"></span>Comercial</button>
+    <button class="chip" data-cat="gerencia" aria-pressed="false"><span class="dot dot--gerencia"></span>Gerencia</button>
+  </div>
+
+  <p class="count" id="count"></p>
+  <div class="grid" id="grid">
+
+    <article class="card" data-cat="planta">
+      <div class="card__top"><span class="dot dot--planta"></span><span class="cat">Planta</span></div>
+      <h3 class="need">¿De qué material es un mueble o cómo se fabrica?</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">Adolfo García</span><span class="who__role">Jefe de Planta</span></div>
+    </article>
+
+    <article class="card" data-cat="planta">
+      <div class="card__top"><span class="dot dot--planta"></span><span class="cat">Planta</span></div>
+      <h3 class="need">Fechas de fabricación y de entrega</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">Wagner García</span><span class="who__role">Coordinador — Adolfo García como respaldo</span></div>
+    </article>
+
+    <article class="card" data-cat="planta">
+      <div class="card__top"><span class="dot dot--planta"></span><span class="cat">Planta</span></div>
+      <h3 class="need">¿En qué etapa está mi proyecto? ¿Cuándo sale?</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">Wagner García</span><span class="who__role">Coordinador</span></div>
+      <p class="note">Los asesores le preguntan a Wagner el avance de su venta.</p>
+    </article>
+
+    <article class="card" data-cat="planta">
+      <div class="card__top"><span class="dot dot--planta"></span><span class="cat">Planta</span></div>
+      <h3 class="need">Corte y armado de melamina</h3>
+      <div class="who"><span class="who__to">Encargado</span><span class="who__name">Adolfo García</span><span class="who__role">Jefe de Planta — con apoyo de Wagner</span></div>
+    </article>
+
+    <article class="card" data-cat="planta">
+      <div class="card__top"><span class="dot dot--planta"></span><span class="cat">Planta · Metal</span></div>
+      <h3 class="need">Fabricación en metal</h3>
+      <div class="who"><span class="who__to">Encargada</span><span class="who__name">Osmary</span><span class="who__role">Encargada de Metal — apellido por confirmar</span></div>
+    </article>
+
+    <article class="card" data-cat="almacen">
+      <div class="card__top"><span class="dot dot--almacen"></span><span class="cat">Almacén</span></div>
+      <h3 class="need">Stock de piezas, material o herramientas</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">Miguel Calixtro</span><span class="who__role">Almacén de planta</span></div>
+    </article>
+
+    <article class="card" data-cat="almacen">
+      <div class="card__top"><span class="dot dot--almacen"></span><span class="cat">Almacén</span></div>
+      <h3 class="need">Coordinar el despacho o traslado de un pedido</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">Miguel Calixtro</span><span class="who__role">Almacén — lo coordina el vendedor</span></div>
+    </article>
+
+    <article class="card" data-cat="diseno">
+      <div class="card__top"><span class="dot dot--diseno"></span><span class="cat">Diseño</span></div>
+      <h3 class="need">Un problema en el flujo de trabajo de los arquitectos</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">Bruno Guzmán</span><span class="who__role">Jefe de Diseño</span></div>
+    </article>
+
+    <article class="card" data-cat="diseno">
+      <div class="card__top"><span class="dot dot--diseno"></span><span class="cat">Diseño</span></div>
+      <h3 class="need">Coordinar una visita técnica a un cliente</h3>
+      <div class="who"><span class="who__to">Lo coordina</span><span class="who__name">Bruno Guzmán</span><span class="who__role">Jefe de Diseño</span></div>
+    </article>
+
+    <article class="card" data-cat="diseno">
+      <div class="card__top"><span class="dot dot--diseno"></span><span class="cat">Diseño</span></div>
+      <h3 class="need">Fichas, planos o especificaciones de un mueble</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">Bruno Guzmán</span><span class="who__role">Jefe de Diseño</span></div>
+    </article>
+
+    <article class="card" data-cat="rrhh">
+      <div class="card__top"><span class="dot dot--rrhh"></span><span class="cat">RR.HH.</span></div>
+      <h3 class="need">¿Cuántos días de vacaciones me tocan?</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">Lisbeth Parra</span><span class="who__role">Recursos Humanos</span></div>
+    </article>
+
+    <article class="card" data-cat="rrhh">
+      <div class="card__top"><span class="dot dot--rrhh"></span><span class="cat">RR.HH.</span></div>
+      <h3 class="need">Pedir un permiso o justificar una falta</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">Jhostyn García</span><span class="who__role">Con apoyo de Lisbeth Parra</span></div>
+    </article>
+
+    <article class="card" data-cat="rrhh">
+      <div class="card__top"><span class="dot dot--rrhh"></span><span class="cat">RR.HH.</span></div>
+      <h3 class="need">Boletas y temas de personal</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">Lisbeth Parra</span><span class="who__role">Recursos Humanos</span></div>
+    </article>
+
+    <article class="card" data-cat="conta">
+      <div class="card__top"><span class="dot dot--conta"></span><span class="cat">Contabilidad</span></div>
+      <h3 class="need">Pagos a proveedores y facturación</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">Jhostyn García y Lisbeth Parra</span><span class="who__role">Contabilidad</span></div>
+    </article>
+
+    <article class="card" data-cat="conta">
+      <div class="card__top"><span class="dot dot--conta"></span><span class="cat">Contabilidad</span></div>
+      <h3 class="need">Adelantos, caja chica o viáticos</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">Jhostyn García</span><span class="who__role">Compras y Contabilidad</span></div>
+    </article>
+
+    <article class="card" data-cat="conta">
+      <div class="card__top"><span class="dot dot--conta"></span><span class="cat">Contabilidad</span></div>
+      <h3 class="need">¿Entró el adelanto de un cliente?</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">Jhostyn García y Lisbeth Parra</span><span class="who__role">Contabilidad</span></div>
+    </article>
+
+    <article class="card" data-cat="conta">
+      <div class="card__top"><span class="dot dot--conta"></span><span class="cat">Compras</span></div>
+      <h3 class="need">Compra de insumos para una orden</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">Jhostyn García</span><span class="who__role">Compras</span></div>
+    </article>
+
+    <article class="card" data-cat="comercial">
+      <div class="card__top"><span class="dot dot--comercial"></span><span class="cat">Comercial</span></div>
+      <h3 class="need">Precio o cotización de un proyecto</h3>
+      <div class="who"><span class="who__to">Lo ve</span><span class="who__name">El vendedor a cargo</span><span class="who__role">Con aprobación de Gerencia si hay descuento</span></div>
+    </article>
+
+    <article class="card" data-cat="comercial">
+      <div class="card__top"><span class="dot dot--comercial"></span><span class="cat">Comercial</span></div>
+      <h3 class="need">Un reclamo de un cliente después de la entrega</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">El vendedor a cargo</span><span class="who__role">Es quien hace el seguimiento del cliente</span></div>
+    </article>
+
+    <article class="card" data-cat="comercial">
+      <div class="card__top"><span class="dot dot--comercial"></span><span class="cat">Comercial · Empresa</span></div>
+      <h3 class="need">Datos de la empresa para cotizaciones y OC</h3>
+      <div class="who"><span class="who__to">Razón social · RUC</span><span class="who__name">Estilo Oficina Perú S.A.C.</span><span class="who__role">RUC 20610058133</span></div>
+      <p class="note">Actividad: fabricación de partes y piezas de carpintería para edificios y construcciones.</p>
+    </article>
+
+    <article class="card" data-cat="gerencia">
+      <div class="card__top"><span class="dot dot--gerencia"></span><span class="cat">Gerencia</span></div>
+      <h3 class="need">Un descuento a un cliente</h3>
+      <div class="who"><span class="who__to">Lo aprueba</span><span class="who__name">Gerencia</span><span class="who__role">El vendedor coordina el tope junto a Gerencia</span></div>
+    </article>
+
+    <article class="card" data-cat="gerencia">
+      <div class="card__top"><span class="dot dot--gerencia"></span><span class="cat">Gerencia</span></div>
+      <h3 class="need">Dar crédito a una constructora</h3>
+      <div class="who"><span class="who__to">Lo aprueba</span><span class="who__name">Gerencia</span><span class="who__role">Previa coordinación del vendedor, según contrato u OC</span></div>
+    </article>
+
+    <article class="card" data-cat="gerencia">
+      <div class="card__top"><span class="dot dot--gerencia"></span><span class="cat">Gerencia</span></div>
+      <h3 class="need">Una decisión que ninguna área puede resolver</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">Gerencia</span><span class="who__role">Último escalón, no el primero</span></div>
+    </article>
+
+    <article class="card" data-cat="comercial">
+      <div class="card__top"><span class="dot dot--comercial"></span><span class="cat">Comercial · Urgencias</span></div>
+      <h3 class="need">Una entrega no llega o hay un reclamo urgente de obra</h3>
+      <div class="who"><span class="who__to">Escala en orden</span><span class="who__name">1) El vendedor a cargo</span><span class="who__role">2) Wagner (coordinación) o Adolfo (planta) · 3) Gerencia</span></div>
+    </article>
+
+    <article class="card" data-cat="conta">
+      <div class="card__top"><span class="dot dot--conta"></span><span class="cat">Compras</span></div>
+      <h3 class="need">Contacto de un proveedor (melamina, herrajes, transporte)</h3>
+      <div class="who"><span class="who__to">Consulta a</span><span class="who__name">Jhostyn García</span><span class="who__role">Compras — lista de proveedores por completar</span></div>
+    </article>
+
+    <article class="card" data-cat="rrhh">
+      <div class="card__top"><span class="dot dot--rrhh"></span><span class="cat">RR.HH. · Horarios</span></div>
+      <h3 class="need">Horario de atención y turnos</h3>
+      <div class="who"><span class="who__to">Horario de labores</span><span class="who__name">7:00 am – 5:30 pm</span><span class="who__role">Planta y oficina</span></div>
+      <p class="note">Atención al público y proveedores: 8:00 am – 5:00 pm.</p>
+    </article>
+
+  </div>
+  <div class="empty" id="empty">No hay ninguna consulta con ese término. Prueba con otra palabra, o escribe a quien creas más cercano al tema.</div>
+</main>
+
+<!-- ============ PROCESOS ============ -->
+<main class="wrap view" id="view-procesos" hidden>
+  <p class="lead">Documentos oficiales de la empresa. Aquí se cuelgan el proceso de ventas y los que se vayan creando. Los enlaces se activan cuando el documento esté publicado.</p>
+  <div class="grid">
+
+    <div class="doc">
+      <div class="doc__top">
+        <div class="doc__ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+        <div><div class="doc__h">Proceso de venta, fabricación y entrega</div><div class="doc__meta">Procedimiento EO-PR-VEN-001</div></div>
+      </div>
+      <span class="badge badge--draft">Borrador v1.1</span>
+      <div class="doc__link">Enlace por agregar — cuando el documento esté alojado lo conecto aquí.</div>
+    </div>
+
+    <div class="doc">
+      <div class="doc__top">
+        <div class="doc__ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></div>
+        <div><div class="doc__h">Flujo de ventas en 6 pasos</div><div class="doc__meta">Póster de tarjetas para pared y celular</div></div>
+      </div>
+      <span class="badge badge--ok">Aprobado por Gerencia</span>
+      <div class="doc__link">Enlace por agregar.</div>
+    </div>
+
+    <div class="doc">
+      <div class="doc__top">
+        <div class="doc__ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/></svg></div>
+        <div><div class="doc__h">Formatos y plantillas</div><div class="doc__meta">Cotización · OC · orden de trabajo · control de calidad</div></div>
+      </div>
+      <span class="badge badge--soon">En construcción</span>
+      <div class="doc__link">Se cuelgan aquí cuando estén listos.</div>
+    </div>
+
+    <div class="doc">
+      <div class="doc__top">
+        <div class="doc__ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
+        <div><div class="doc__h">Próximos procesos</div><div class="doc__meta">RR.HH., Compras, Control de calidad…</div></div>
+      </div>
+      <span class="badge badge--soon">En construcción</span>
+      <div class="doc__link">Se irán sumando a medida que se documenten.</div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ============ EQUIPO ============ -->
+<main class="wrap view" id="view-equipo" hidden>
+  <div class="note-strip">
+    <span class="mk">📇</span>
+    <p><b>Teléfonos y correos: por completar.</b> La lista que me pasaste (constancia del SCTR) trae los nombres, no los contactos. Cuando me des un número de WhatsApp por persona, activo el botón para escribirles directo. Los DNI no se publican aquí por seguridad.</p>
+  </div>
+
+  <div class="grp">Responsables por área</div>
+  <div class="people">
+    <div class="person"><div class="ava">WG</div><div class="person__b"><span class="person__n">Wagner García</span><span class="person__r">Coordinador</span><span class="person__c">Proyectos · fechas · fabricación</span></div></div>
+    <div class="person"><div class="ava">AG</div><div class="person__b"><span class="person__n">Adolfo García</span><span class="person__r">Jefe de Planta</span><span class="person__c">Fabricación · corte y armado</span></div></div>
+    <div class="person"><div class="ava">OS</div><div class="person__b"><span class="person__n">Osmary</span><span class="person__r">Encargada de Metal</span><span class="person__c">Apellido por confirmar</span></div></div>
+    <div class="person"><div class="ava">MC</div><div class="person__b"><span class="person__n">Miguel Calixtro</span><span class="person__r">Almacén</span><span class="person__c">Stock · despachos</span></div></div>
+    <div class="person"><div class="ava">BG</div><div class="person__b"><span class="person__n">Bruno Guzmán</span><span class="person__r">Jefe de Diseño</span><span class="person__c">Arquitectos · fichas · visitas técnicas</span></div></div>
+    <div class="person"><div class="ava">JG</div><div class="person__b"><span class="person__n">Jhostyn García</span><span class="person__r">Compras y Contabilidad</span><span class="person__c">Insumos · adelantos · permisos</span></div></div>
+    <div class="person"><div class="ava">LP</div><div class="person__b"><span class="person__n">Lisbeth Parra</span><span class="person__r">RR.HH. y Contabilidad</span><span class="person__c">Personal · pagos</span></div></div>
+  </div>
+
+  <div class="grp">Todo el equipo (24)</div>
+  <ul class="roster">
+    <li>Yoherdenzon Yoshet Bravo Liendo</li>
+    <li>Miguel Ángel Calixtro Rivera <span>· Almacén</span></li>
+    <li>Cristhian Jesús Carreño Sosa</li>
+    <li>Ángel Boris Cuzcano Gamarra</li>
+    <li>Vanessa Ghirem De La Cruz Loayza</li>
+    <li>Josemaría Favio Donayre Cuba</li>
+    <li>Geraldine Brishette Figueroa Figueroa</li>
+    <li>Adolfo Rubén García Marcelo <span>· Jefe de Planta</span></li>
+    <li>Enrique Hipólito García Marcelo</li>
+    <li>Jesús Kender García Marcelo</li>
+    <li>Jhostyn Kender García Marcelo <span>· Compras</span></li>
+    <li>Wagner Adrián García Vara <span>· Coordinador</span></li>
+    <li>Milagros Elva García Marcelo</li>
+    <li>Bruno Alexander Guzmán Góngora <span>· Diseño</span></li>
+    <li>Paul Alessandro Jiménez Cárdenas</li>
+    <li>Nels Jeferson López Lima</li>
+    <li>Medardo Luque Rojas</li>
+    <li>Arli Luque Rojas</li>
+    <li>Lisbeth Pamela Parra Espinoza <span>· RR.HH.</span></li>
+    <li>Magín Pizango Pinedo</li>
+    <li>Paolo Rodrigo Salazar Castillo</li>
+    <li>Deyvid Israel Sánchez Lara</li>
+    <li>Yhina Alyson Tirado Sanca</li>
+    <li>Jorge Villacrez De Souza</li>
+  </ul>
+</main>
+
+<!-- ============ GLOSARIO ============ -->
+<main class="wrap view" id="view-glosario" hidden>
+  <style>
+    .gloss{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:12px}
+    .term{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 14px;box-shadow:var(--shadow)}
+    .term h3{font-size:15px;font-weight:700;margin-bottom:5px}
+    .term h3 .sigla{color:var(--accent)}
+    .term p{margin:0;font-size:13px;color:var(--muted)}
+  </style>
+  <p class="lead">Conceptos que aparecen en el proceso de venta y fabricación. Si una palabra no está aquí, pregúntala y la sumamos.</p>
+  <div class="gloss">
+    <div class="term"><h3><span class="sigla">OC</span> — Orden de Compra</h3><p>Documento con que el comprador formaliza el pedido. Dispara la fabricación y marca el inicio del plazo.</p></div>
+    <div class="term"><h3><span class="sigla">OP</span> — Orden de Pedido</h3><p>Documento del comprador equivalente a la OC que usan algunas entidades para encargar el mobiliario.</p></div>
+    <div class="term"><h3>Ficha técnica</h3><p>Hoja con las medidas, materiales y acabados del mueble aprobado para fabricar.</p></div>
+    <div class="term"><h3>Expediente técnico</h3><p>Conjunto de documentos del proyecto: planos, especificaciones y partidas.</p></div>
+    <div class="term"><h3>Partida</h3><p>Cada ítem presupuestado dentro del expediente, por ejemplo “mobiliario de oficina”.</p></div>
+    <div class="term"><h3><span class="sigla">SEACE</span></h3><p>Sistema Electrónico de Contrataciones del Estado, donde las entidades públicas publican sus compras.</p></div>
+    <div class="term"><h3>Acuerdo Marco</h3><p>Catálogo electrónico del Estado con precios fijos. Se compra del catálogo, sin negociar precio.</p></div>
+    <div class="term"><h3>Conformidad</h3><p>Acta en que el comprador acepta la entrega. Habilita la facturación y el cobro.</p></div>
+    <div class="term"><h3>Guía de remisión</h3><p>Documento que acompaña el traslado de la mercadería hasta el destino indicado.</p></div>
+    <div class="term"><h3>Penalidad / mora</h3><p>Descuento por entregar fuera del plazo, según lo que diga el contrato u OC.</p></div>
+    <div class="term"><h3>Melamina</h3><p>Tablero recubierto con el que se fabrica la mayoría del mobiliario. Es la base del corte y armado.</p></div>
+    <div class="term"><h3>Estructura metálica</h3><p>Patas, bases y soportes de metal que fabrica el área de Metal.</p></div>
+    <div class="term"><h3>Mobiliario corporativo</h3><p>Línea de muebles para oficina: escritorios, sillas, módulos, archivadores y afines.</p></div>
+    <div class="term"><h3>Constructora</h3><p>Cliente privado que ejecuta obras y compra mobiliario para equiparlas.</p></div>
+    <div class="term"><h3>Entidad pública</h3><p>Comprador del Estado: municipio, ministerio, colegio, hospital, etc. Compra por SEACE o Acuerdo Marco.</p></div>
+    <div class="term"><h3>Cotización</h3><p>Documento con el precio y las condiciones que el vendedor envía al cliente antes de la OC.</p></div>
+    <div class="term"><h3>Adelanto</h3><p>Pago parcial por anticipado que el cliente hace antes de iniciar la fabricación.</p></div>
+    <div class="term"><h3>Crédito</h3><p>Venta a pagar en los días acordados. Lo aprueba Gerencia según el contrato u OC.</p></div>
+    <div class="term"><h3>Entrega parcial</h3><p>Envío del pedido por lotes, según lo que se acuerde con el cliente.</p></div>
+    <div class="term"><h3>Orden de trabajo</h3><p>Documento interno que autoriza a planta a fabricar un pedido ya revisado.</p></div>
+    <div class="term"><h3>Control de calidad</h3><p>Revisión del pedido contra la OC y las fichas antes de despacharlo.</p></div>
+    <div class="term"><h3>Flete / distribución</h3><p>Traslado del pedido terminado al punto o dirección que indica la OC.</p></div>
+    <div class="term"><h3>Factura</h3><p>Comprobante de pago que emite Contabilidad por la venta realizada.</p></div>
+    <div class="term"><h3>Carta fianza</h3><p>Garantía bancaria que algunas entidades exigen por el adelanto o el fiel cumplimiento.</p></div>
+    <div class="term"><h3>Ficha homologada</h3><p>Ficha de producto validada según los requisitos del comprador (por ejemplo, una RVM del Estado).</p></div>
+    <div class="term"><h3>Plazo de entrega</h3><p>Días que tiene la empresa para entregar, contados desde la OC. Incumplirlo genera penalidad.</p></div>
+  </div>
+</main>
+
+<footer class="foot">
+  <p><b>Estilo Oficina — Directorio de consultas.</b> Borrador de trabajo, versión 0.4 · 25-nov-2026. Para tenerlo a la mano: abre este enlace en tu celular y usa “Agregar a la pantalla de inicio”.</p>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  /* --- Tabs --- */
+  var tabs=[].slice.call(document.querySelectorAll('.tab')),
+      views={consultas:document.getElementById('view-consultas'),
+             procesos:document.getElementById('view-procesos'),
+             equipo:document.getElementById('view-equipo'),
+             glosario:document.getElementById('view-glosario')};
+  function show(name){
+    if(!views[name])name='consultas';
+    tabs.forEach(function(t){t.setAttribute('aria-selected',t.dataset.view===name?'true':'false');});
+    Object.keys(views).forEach(function(k){views[k].hidden=(k!==name);});
+    try{if(location.hash.slice(1)!==name)history.replaceState(null,'',name==='consultas'?location.pathname:'#'+name);}catch(e){}
+  }
+  tabs.forEach(function(t){t.addEventListener('click',function(){show(t.dataset.view);window.scrollTo(0,0);});});
+  window.addEventListener('hashchange',function(){show(location.hash.slice(1)||'consultas');});
+
+  /* --- Buscador + chips --- */
+  var q=document.getElementById('q'),clear=document.getElementById('clear'),
+      chipBox=document.getElementById('chips'),cards=[].slice.call(document.querySelectorAll('#grid .card')),
+      count=document.getElementById('count'),empty=document.getElementById('empty'),
+      total=cards.length,activeCat='all';
+  function norm(s){return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+  var text=cards.map(function(c){return norm(c.textContent);});
+  function apply(){
+    var term=norm(q.value.trim()),shown=0;
+    cards.forEach(function(c,i){
+      var vis=(activeCat==='all'||c.dataset.cat===activeCat)&&(!term||text[i].indexOf(term)>-1);
+      c.hidden=!vis; if(vis)shown++;
+    });
+    empty.classList.toggle('on',shown===0);
+    count.textContent=shown===total?(total+' consultas'):(shown+' de '+total+' consultas');
+    clear.classList.toggle('on',q.value.length>0);
+  }
+  q.addEventListener('input',apply);
+  clear.addEventListener('click',function(){q.value='';q.focus();apply();});
+  chipBox.addEventListener('click',function(e){
+    var b=e.target.closest('.chip'); if(!b)return;
+    activeCat=b.dataset.cat;
+    [].forEach.call(chipBox.children,function(ch){ch.setAttribute('aria-pressed',ch===b?'true':'false');});
+    apply();
+  });
+
+  /* --- Copiar enlace --- */
+  var toast=document.getElementById('toast'),tt;
+  function say(m){toast.textContent=m;toast.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){toast.classList.remove('on');},1800);}
+  document.getElementById('copy').addEventListener('click',function(){
+    var url=location.href.split('#')[0];
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(function(){say('Enlace copiado');},function(){say('Copia el enlace desde la barra');});
+    }else{say('Copia el enlace desde la barra');}
+  });
+
+  show(location.hash.slice(1)||'consultas');
+  apply();
+})();
+</script>
